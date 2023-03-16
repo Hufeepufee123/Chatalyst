@@ -36,7 +36,9 @@ module.exports = {
             }
 
             if (!interaction.guild.members.me?.permissionsIn(interaction.channel).has(PermissionsBitField.Flags.SendMessages)){
-                return await interaction.reply({ content: 'Unable to setup a connection due to invalid permissions to send message in this channel!', ephemeral: true })
+                return await interaction.reply({ content: 'Unable to setup a connection due to invalid permissions to send message in this channel!', ephemeral: true }).catch(error => {
+                    return
+                })
             }
         
     
