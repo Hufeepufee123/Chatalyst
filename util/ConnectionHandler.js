@@ -3,7 +3,7 @@ const User = require('../datamodels/User')
 const Server = require('../datamodels/Server')
 
 const { checkText, createServerData, createUserData } = require('../util/Helper')
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField } = require('discord.js')
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js')
 
 const endCallList = ['end', 'end call', '!end', '/end', ';end', 'endcall', 'end cal', 'end call daddy']
 
@@ -82,7 +82,7 @@ const UpdateServerStats = async (serverId, discordId) => {
 
 
 const SendMessage = async (channel, msg) => {
-    if (!msg.guild.members.me?.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)){
+    if (!msg.guild.members.me?.permissionsIn(channel).has(PermissionFlagsBits.SendMessages)){
         return
     }
     if (msg.content === '' && !msg.attachments) return msg.channel.send('You cant send nothing!').catch(error => { return false })

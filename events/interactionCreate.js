@@ -3,7 +3,7 @@
 const User = require('../datamodels/User');
 const Server = require('../datamodels/Server')
 const { developers } = require('../devconfig.json');
-const { InteractionType, PermissionsBitField } = require('discord.js');
+const { InteractionType, PermissionFlagsBits } = require('discord.js');
 const { createServerData, createUserData } = require('../util/Helper');
 
 const returnError = async(interaction, role) => {
@@ -30,12 +30,12 @@ module.exports = {
     
     
             try {
-                if (command.guildAdminOnly && await member.permissionsIn(interaction.channel).has("ADMINISTRATOR")) return await returnError(interaction, 'Server Administrators')
+                if (command.guildAdminOnly && await member.permissionsIn(interaction.channel).has(PermissionFlagsBits.Administrator)) return await returnError(interaction, 'Server Administrators')
             } catch(error) {
                 return await returnError(interaction, 'Server Administrators')
             }
 
-            if (!interaction.guild.members.me?.permissionsIn(interaction.channel).has(PermissionsBitField.Flags.SendMessages)){
+            if (!interaction.guild.members.me?.permissionsIn(interaction.channel).has(PermissionFlagsBits.SendMessages)){
                 return await interaction.reply({ content: 'Unable to setup a connection due to invalid permissions to send message in this channel!', ephemeral: true }).catch(error => {
                     return
                 })

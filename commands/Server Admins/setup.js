@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits  } = require('discord.js');
 const Server = require('../../datamodels/Server');
 const SlashCommand = require('../../util/SlashCommand');
 
@@ -183,6 +183,7 @@ module.exports = class Help extends SlashCommand {
         return new SlashCommandBuilder()
             .setName(this.name)
             .setDescription(this.description)
+            .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
             .toJSON();
     }
 }
