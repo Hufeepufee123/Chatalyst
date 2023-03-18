@@ -23,7 +23,7 @@ module.exports = class Help extends SlashCommand {
 
     async run(client, UserCollection, ServerCollection, interaction) {
 
-        return await interaction.reply({ content: 'This is a `beta` only feature, to apply feel free to join our communication server', ephemeral: true })
+        return await interaction.reply({ content: 'This is a `beta` only feature, to apply feel free to join our communication server', components: [ discordServerButton ] , ephemeral: true })
 
 
         if (ServerCollection.settings.setup === false) {
