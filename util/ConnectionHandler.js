@@ -121,8 +121,13 @@ const SendMessage = async (channel, msg) => {
 
     if (msg.content === '' && !msg.attachments) return msg.channel.send('You cant send messages in this server!').catch(error => { return false })
 
+
     if (attachment && attachment != '**[ATTACHMENT BLOCKED DUE TO SERVER SETTINGS]**') {
-        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}`, files: [{ attachment: attachment }] }).catch(error => { return  })
+        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}`, files: [{ attachment: attachment }] }).catch(error => { 
+            try {
+                return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n**[FAILED TO PROCESS MEDIA]**` })
+            } catch(error){return false}
+          })
     } else {
         return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n${attachment ?? ''}` }).then(async () => {
             await UpdateUser(msg.author.id).catch(error => { return  })

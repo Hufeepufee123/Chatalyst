@@ -8,11 +8,11 @@ module.exports = {
 
         const deleteConnection = await Connection.findOne({ guild_1: interaction.guild.id })
         if (!deleteConnection){
-            return await interaction.reply('You do not have a connection, to create one type `/call`!')
+            return await interaction.reply({ content: 'You do not have a connection, to create one type `/call`!', ephemeral: true })
         }
 
         if (deleteConnection.guild_2 != 'N/A'){
-            return await interaction.reply('You already have a call, to end type **end** or **end call**!')
+            return await interaction.reply({ content: 'You already have a call, to end type **end** or **end call**!', ephemeral: true })
         }
 
         const deleted = await Connection.deleteOne(deleteConnection)

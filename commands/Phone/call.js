@@ -35,12 +35,12 @@ module.exports = class Help extends SlashCommand {
 
         const check_1 = await Connection.findOne({ guild_1: interaction.guild.id })
         if (check_1){
-            return await interaction.reply('This server already has a connection!')
+            return await interaction.reply({ content: `This server already has a connection in <#${check_1.channel_1}>!`, ephemeral: true })
         }
 
         const check_2 = await Connection.findOne({ guild_2: interaction.guild.id })
         if (check_2){
-            return await interaction.reply('This server already has a connection!')
+            return await interaction.reply({ content: `This server already has a connection in <#${check_2.channel_2}>!`, ephemeral: true })
         }
 
         await interaction.reply('Connecting...')
