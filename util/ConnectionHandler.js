@@ -191,6 +191,13 @@ const StartConnection = async (client, interaction, check_available) => {
         })
 
         collector_1.on('collect', async (msg) => {
+            if (!(await Connection.findOne({ guild_1: msg.guild.id }) || await Connection.findOne({ guild_2: msg.guild.id }) )){
+                collector_1.stop()
+                collector_2.stop('end_recieved')
+                return
+            }
+
+
             if (endCallList.includes(msg.content)) {
                 collector_1.stop('end_sent')
                 collector_2.stop('end_recieved')
@@ -206,6 +213,12 @@ const StartConnection = async (client, interaction, check_available) => {
         })
 
         collector_2.on('collect', async (msg) => {
+            if (!(await Connection.findOne({ guild_1: msg.guild.id }) || await Connection.findOne({ guild_2: msg.guild.id }) )){
+                collector_1.stop('end_recieved')
+                collector_2.stop()
+                return
+            }
+
             if (endCallList.includes(msg.content)) {
                 collector_2.stop('end_sent')
                 collector_1.stop('end_recieved')
@@ -225,6 +238,7 @@ const StartConnection = async (client, interaction, check_available) => {
 
         collector_1.on('end', async (collected, reason) => {
             await Connection.deleteOne({ data })
+
             return EndConnection(channel_1, reason, guild_2)
         })
 

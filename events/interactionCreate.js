@@ -76,10 +76,14 @@ module.exports = {
                 })
             }
         } else if (interaction.isButton()){
-            let Button = client.Buttons.get(interaction.customId) 
+            let Button = await client.Buttons.get(interaction.customId) 
             
             if (!Button && interaction.customId.includes('server_')){
-                Button = client.Buttons.get('serverinfo')
+                Button = await client.Buttons.get('serverinfo')
+            }
+
+            if (!Button && interaction.customId.includes('cancelconnection')){
+                Button = await client.Buttons.get('cancelconnection')
             }
 
             if (!Button) return await returnError(interaction, 'Invalid command? What!? This shouldnt be happening!')
