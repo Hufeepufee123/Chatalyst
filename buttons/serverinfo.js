@@ -1,30 +1,37 @@
 const Server = require('../datamodels/Server')
 
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 
 module.exports = {
     name: "serverinfo",
     async run(client, interaction) {
-        await interaction.deferReply()
 
-        const serverId = interaction.customId.split('server_')[1]
+        const split = interaction.customId.split('server_')[1].split('_')
+        const serverId = split[0]
+        const status = split[1]
+
+
 
         const data = await Server.findOne({ guild_id: serverId })
 
         if (data.settings.private === true) {
-            return await interaction.editReply({ content: 'The server has been set to `private` meaning you cant view their statistics!', ephemeral: true })
+            return await interaction.reply({ content: 'The server has been set to `private` meaning you cant view their statistics!', ephemeral: true })
+        }
+
+        if (status === 'done') {
+            return await interaction.reply({ content: 'Information has already been posted about this server!', ephemeral: true })
         }
 
 
 
         const server = await client.guilds.fetch(serverId)
-        if (!server){
-            return await interaction.editReply({ content: 'Unable to get server information possibly due to not being in the server anymore!', ephemeral: true })
+        if (!server) {
+            return await interaction.reply({ content: 'Unable to get server information possibly due to not being in the server anymore!', ephemeral: true })
         }
 
         let serverOwner = await server.members.fetch(server.ownerId)
-        if (!serverOwner){
-            serverOwner = { user: {tag: 'N/A - Error'}}
+        if (!serverOwner) {
+            serverOwner = { user: { tag: 'N/A - Error' } }
         }
 
 
@@ -34,6 +41,21 @@ module.exports = {
             .setDescription(`🛡️ **${serverOwner.user.tag}**\n🏷️ **${server.memberCount.toLocaleString("en-US")}** members!`)
             .setThumbnail(server.iconURL())
 
-        return await interaction.editReply({ embeds: [infoEmbed] })
+
+        const infoButton = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`server_${serverId}_done`)
+                    .setEmoji('🔎')
+                    .setLabel('Get Server Info')
+
+                    .setStyle(ButtonStyle.Secondary)
+        )
+
+
+        try {
+            await interaction.update({ components: [infoButton] })
+            return await interaction.channel.send({ embeds: [infoEmbed] })
+        }catch(error){console.log(error)}
     }
 } 

@@ -153,7 +153,7 @@ const EndConnection = async (channel, reason, serverId) => {
     const infoButton = new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder()
-                .setCustomId(`server_${serverId}`)
+                .setCustomId(`server_${serverId}_not`)
                 .setEmoji('🔎')
                 .setLabel('Get Server Info')
 
