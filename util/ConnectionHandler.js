@@ -28,7 +28,7 @@ const FindConnection = async (client, interaction) => {
             channel_2: 'N/A'
         })
 
-        return await interaction.channel.send({ content: 'Creating a connection. This may take a minute to link with another server!', components: [ cancelButton ] }).catch(async (error) => {
+        return await interaction.channel.send({ content: 'Creating a connection. This may take a minute to link with another server!', components: [cancelButton] }).catch(async (error) => {
             await interaction.editReply('Failed to connect due to unable to send messages in this channel!')
             return await Connection.deleteOne({ guild_1: interaction.guild.id })
         })
@@ -82,7 +82,7 @@ const UpdateServerStats = async (serverId, discordId) => {
 
 
 const SendMessage = async (channel, msg) => {
-    if (!msg.guild.members.me?.permissionsIn(channel).has(PermissionFlagsBits.SendMessages)){
+    if (!msg.guild.members.me?.permissionsIn(channel).has(PermissionFlagsBits.SendMessages)) {
         return
     }
     if (msg.content === '' && !msg.attachments) return msg.channel.send('You cant send nothing!').catch(error => { return false })
@@ -115,7 +115,7 @@ const SendMessage = async (channel, msg) => {
         }
     } catch (error) { }
 
-    if (server_data.settings.allowImages === false && attachment){
+    if (server_data.settings.allowImages === false && attachment) {
         attachment = '**[BLOCKED DUE TO SERVER SETTINGS]**'
     }
 
@@ -123,15 +123,20 @@ const SendMessage = async (channel, msg) => {
 
 
     if (attachment && attachment != '**[ATTACHMENT BLOCKED DUE TO SERVER SETTINGS]**') {
-        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}`, files: [{ attachment: attachment }] }).catch(error => { 
-            try {
-                return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n**[FAILED TO PROCESS MEDIA]**` })
-            } catch(error){return false}
-          })
+        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}`, files: [{ attachment: attachment }] }).catch(error => {
+            return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n**[FAILED TO PROCESS MEDIA]**` }).catch((error) => {
+                message.delete()
+                return false
+            })
+        })
     } else {
-        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n${attachment ?? ''}` }).then(async () => {
-            await UpdateUser(msg.author.id).catch(error => { return  })
+        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n${attachment ?? ''}` }).then(async (message) => {
+            await UpdateUser(msg.author.id).catch(error => { return })
             //await UpdateServerStats(msg.guild.id, msg.author.id).catch(error => { return false })
+
+            if (server_data.settings.allowImages == false) {
+                await message.suppressEmbeds(true)
+            }
             return true
 
         }).catch(async () => {
@@ -190,15 +195,20 @@ const StartConnection = async (client, interaction, check_available) => {
             return
         })
 
+        let send_1 = false
+        let send_2 = false
+
         collector_1.on('collect', async (msg) => {
-            if (!(await Connection.findOne({ guild_1: msg.guild.id }) || await Connection.findOne({ guild_2: msg.guild.id }) )){
-                collector_1.stop()
-                collector_2.stop('end_recieved')
+            const getConnection = await Connection.findOne({ guild_1: msg.guild.id })
+            if (!getConnection && !send_1) {
+                send_1 = true
+                collector_1.stop('end_recieved')
+                collector_2.stop('end_sent')
                 return
             }
 
-
-            if (endCallList.includes(msg.content)) {
+            if (endCallList.includes(msg.content) && !send_1) {
+                send_1 = true
                 collector_1.stop('end_sent')
                 collector_2.stop('end_recieved')
                 return
@@ -213,13 +223,18 @@ const StartConnection = async (client, interaction, check_available) => {
         })
 
         collector_2.on('collect', async (msg) => {
-            if (!(await Connection.findOne({ guild_1: msg.guild.id }) || await Connection.findOne({ guild_2: msg.guild.id }) )){
-                collector_1.stop('end_recieved')
-                collector_2.stop()
+
+            const getConnection = await Connection.findOne({ guild_2: msg.guild.id })
+            if (!getConnection && !send_2) {
+                send_2 = true
+                collector_2.stop('end_recieved')
+                collector_1.stop('end_sent')
                 return
             }
 
-            if (endCallList.includes(msg.content)) {
+
+            if (endCallList.includes(msg.content) && !send_2) {
+                send_2 = true
                 collector_2.stop('end_sent')
                 collector_1.stop('end_recieved')
                 return
