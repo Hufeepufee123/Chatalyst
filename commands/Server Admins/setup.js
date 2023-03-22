@@ -52,7 +52,7 @@ const questions = [
 const checkReq = async (question, message, stored) => {
     await message
 
-    if (message.content === 'cancel'){
+    if (message.content.toLowerCase() === 'cancel'){
         return 'cancel'
     }
 

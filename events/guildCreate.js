@@ -16,13 +16,13 @@ module.exports = {
 
 
 
-        const channel = await guild.channels.cache.find(async (channel) => channel.type === 0 && (guild.members.me.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)))
+        const channel = guild.channels.cache.find( channel => channel.type === 0 && (guild.members.me.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)))
         if (!channel) return;
 
 
         const welcomeEmbed = new EmbedBuilder()
             .setTitle(`👋 Hello '${guild.name}', I am Chatalyst!`)
-            .setDescription('Thanks for inviting me, to your server. To start the setup process an `Administrator` in your server needs to run `/setup` to customize the settings for your users. \n\n**If any issues occur feel free to join Communications Server below!**')
+            .setDescription('Thanks for inviting me, to your server. To start the setup process an `Administrator` in your server needs to run `/setup` to customize the settings for your users. \n**If any issues occur feel free to join Communications Server below!**')
 
         const welcomeButtons = new ActionRowBuilder()
             .addComponents(
@@ -41,7 +41,6 @@ module.exports = {
                     .setLabel('Discord Server!'),
             )
 
-        return
 
         return await channel.send({ embeds: [ welcomeEmbed ], components: [ welcomeButtons ] }).catch(error => { console.log(error) })
 
