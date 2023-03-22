@@ -50,6 +50,8 @@ const FilterMessage = async (message) => {
         msg = msg.replace('@here', '@.here')
     }
 
+    
+
 
     if (msg.includes('@everyone') || msg.includes('@here')) {
         return await FilterMessage(msg)
@@ -87,7 +89,7 @@ const SendMessage = async (channel, msg) => {
     }
     if (msg.content === '' && !msg.attachments) return msg.channel.send('You cant send nothing!').catch(error => { return false })
 
-    let message
+    let message = msg.content
     const serverId = channel.guild.id
 
     let server_data = await Server.findOne({ guild_id: serverId })
@@ -95,10 +97,6 @@ const SendMessage = async (channel, msg) => {
         server_data = await createServerData(serverId)
     }
 
-
-    try {
-        message = await FilterMessage(msg.content)
-    } catch (error) { return false }
 
 
     if (server_data.settings.filterText === true) {
@@ -123,14 +121,15 @@ const SendMessage = async (channel, msg) => {
 
 
     if (attachment && attachment != '**[ATTACHMENT BLOCKED DUE TO SERVER SETTINGS]**') {
-        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}`, files: [{ attachment: attachment }] }).catch(error => {
-            return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n**[FAILED TO PROCESS MEDIA]**` }).catch((error) => {
+        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}`, files: [{ attachment: attachment }], "allowedMentions": { "roles" : [] } }).catch(error => {
+            return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n**[FAILED TO PROCESS MEDIA]**`,  "allowedMentions": { "roles" : []} }).catch((error) => {
                 message.delete()
                 return false
             })
         })
     } else {
-        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n${attachment ?? ''}` }).then(async (message) => {
+
+        return channel.send({ content: `☎️ **${msg.author.username} -** ${message}\n${attachment ?? ''}`, "allowedMentions": { "roles" : []} }).then(async (message) => {
             await UpdateUser(msg.author.id).catch(error => { return })
             //await UpdateServerStats(msg.guild.id, msg.author.id).catch(error => { return false })
 

@@ -16,7 +16,7 @@ module.exports = {
 
 
 
-        const channel = guild.channels.cache.find( channel => channel.type === 0 && (guild.members.me.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)))
+        const channel = guild.channels.cache.find(channel => channel.type === 0 && (guild.members.me.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)))
         if (!channel) return;
 
 
