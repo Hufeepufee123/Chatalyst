@@ -3,7 +3,7 @@ const SlashCommand = require('../../util/SlashCommand');
 
 const Connection = require('../../datamodels/Connection')
 
-const { FindConnection } = require('../../util/ConnectionHandler')
+const { FindConnection } = require('../../util/CallConnectionHandler')
 
 
 
@@ -54,10 +54,6 @@ module.exports = class Help extends SlashCommand {
         await interaction.reply('Connecting...')
 
         return await FindConnection(client, interaction)
-
-
-
-
 
 
 

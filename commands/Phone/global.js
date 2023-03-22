@@ -3,7 +3,7 @@ const SlashCommand = require('../../util/SlashCommand');
 
 const Connection = require('../../datamodels/Connection')
 
-const { FindConnection } = require('../../util/ConnectionHandler')
+const { FindConnection } = require('../../util/CallConnectionHandler')
 
 const discordServerButton = new ActionRowBuilder()
     .addComponents(

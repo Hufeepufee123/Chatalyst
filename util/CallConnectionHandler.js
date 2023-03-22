@@ -2,7 +2,7 @@ const Connection = require('../datamodels/Connection')
 const User = require('../datamodels/User')
 const Server = require('../datamodels/Server')
 
-const { checkText, createServerData, createUserData } = require('../util/Helper')
+const { checkText, createServerData, createUserData } = require('./Helper')
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js')
 
 const endCallList = ['end', 'end call', '!end', '/end', ';end', 'endcall', 'end cal', 'end call daddy']
@@ -149,7 +149,7 @@ const SendMessage = async (channel, msg) => {
 
 
 
-const EndConnection = async (channel, reason, serverId) => {
+const EndConnection = async (channel, reason, serverId, msg) => {
     const infoButton = new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder()
@@ -161,11 +161,11 @@ const EndConnection = async (channel, reason, serverId) => {
 
 
     if (reason === 'end_sent') {
-        return channel.send({ content: `Succesfully disconnected`, components: [infoButton] }).catch(error => { return })
+        return channel.send({ content: msg ?? `Succesfully disconnected`, components: [infoButton] }).catch(error => { return })
     }
 
     if (reason === 'end_recieved') {
-        return channel.send({ content: `Call ended by other recipient!`, components: [infoButton] }).catch(error => { return })
+        return channel.send({ content: msg ?? `Call ended by other recipient!`, components: [infoButton] }).catch(error => { return })
     }
 
     if (reason === 'error') {
@@ -177,7 +177,11 @@ const EndConnection = async (channel, reason, serverId) => {
 
 const StartConnection = async (client, interaction, check_available) => {
     const data = await check_available.updateOne({ guild_2: interaction.guild.id, channel_2: interaction.channel.id })
-    return await interaction.channel.send('Found a connection! Please be nice.').then(async (interaction) => {
+
+    const data_guild_1 = await Server.findOne({ guild_id: check_available.guild_1})
+    const data_guild_2 = await Server.findOne({ guild_id: interaction.guild.id })
+
+    return await interaction.channel.send(data_guild_2.settings.messageConnected ?? 'Found a connection! Please be nice.').then(async (interaction) => {
         const guild_1 = check_available.guild_1
         const channel_1 = await client.channels.fetch(check_available.channel_1)
 
@@ -189,7 +193,7 @@ const StartConnection = async (client, interaction, check_available) => {
         const collector_1 = channel_1.createMessageCollector({ filter })
         const collector_2 = channel_2.createMessageCollector({ filter })
 
-        await channel_1.send('Found a connection! Please be nice').catch(async (error) => {
+        await channel_1.send(data_guild_1.settings.messageConnected ?? 'Found a connection! Please be nice').catch(async (error) => {
             collector_1.stop('error')
             collector_2.stop('error')
             return
@@ -254,11 +258,12 @@ const StartConnection = async (client, interaction, check_available) => {
         collector_1.on('end', async (collected, reason) => {
             await Connection.deleteOne({ data })
 
-            return EndConnection(channel_1, reason, guild_2)
+
+            return EndConnection(channel_1, reason, guild_2, data_guild_1.settings.messageDisconnected)
         })
 
         collector_2.on('end', async (collected, reason) => {
-            return EndConnection(channel_2, reason, guild_1)
+            return EndConnection(channel_2, reason, guild_1, data_guild_2.settings.messageDisconnected)
         })
 
 

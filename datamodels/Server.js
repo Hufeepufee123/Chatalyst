@@ -10,6 +10,9 @@ module.exports = Mongoose.model("Servers", new Mongoose.Schema({
         setup: { type: Boolean, required: true,  default: false },
         private: { type: Boolean, required: true, default: false },
         filterText: { type: Boolean, required: true, default: false },
+
+        messageConnected: { type: String, required: false },
+        messageDisconnected: { type: String, required: false },
         
         callChannel: { type: String, required: true },
         allowImages: { type: Boolean, required: true, default: true },

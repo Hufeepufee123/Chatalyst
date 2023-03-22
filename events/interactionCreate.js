@@ -16,6 +16,10 @@ const returnError = async(interaction, role) => {
 module.exports = {
     name: 'interactionCreate',
     run: async (client, interaction) => {
+        if (!interaction.guild){
+            return await interaction.reply('You cant do commands in DMs!')
+        }
+
         const { commandName } = interaction;
         const command = client.Commands.get(commandName);
 

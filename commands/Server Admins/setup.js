@@ -26,6 +26,16 @@ const questions = [
         req: 'bool',
         small: 'private'
     },
+    { 
+        question: 'What custom message would you like when you **connect** to a call? You can ping roles, mention channels, etc. Saying `cancel` will stop this prompt.',
+        req: 'string',
+        small: 'messageConnected',
+    },
+    { 
+        question: 'What custom message would you like when you **disconnect** to a call? You can ping roles, mention channels, etc. Saying `cancel` will stop this prompt.',
+        req: 'string',
+        small: 'messageDisconnected',
+    },
     {
         question: 'What blacklist role would you like to add? Adding this will prevent users with the role to run the `/call` command or talk in calls.\n\nNot mentioning a role will set this to N/A. Saying `cancel` will stop this prompt.',
         req: 'role',
@@ -78,6 +88,10 @@ const checkReq = async (question, message, stored) => {
     
     }
 
+    if (req === 'string'){
+        return message.content
+    }
+
 
 
 
@@ -104,6 +118,9 @@ module.exports = class Help extends SlashCommand {
                 callChannel: 'N/A',
                 allowImages: 'N/A',
 
+                messageConnected: 'Found a connection! Please be nice.',
+                messageDisconnected: 'Succesfully disconnected.',
+
                 blacklistRole: 'N/A',
                 whitelistRole: 'N/A',
                 setup: true
@@ -122,7 +139,7 @@ module.exports = class Help extends SlashCommand {
 
 
             collector.on('collect', async (msg) => {
-                if (collectCounter < 6){
+                if (collectCounter < 8){
 
 
                     const req = await checkReq(questions[collectCounter], msg, stored)
@@ -143,11 +160,11 @@ module.exports = class Help extends SlashCommand {
                 
                     collectCounter++
 
-                    if (collectCounter >= 6){
+                    if (collectCounter >= 8){
                         return collector.stop('fulfilled')
                     }
                     interaction.channel.send(questions[collectCounter].question).catch(async (error) => {
-
+                        
                     })
                     
                 } else {

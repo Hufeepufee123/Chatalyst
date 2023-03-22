@@ -7,23 +7,17 @@ module.exports = {
     name: 'guildCreate',
     run: async (client, guild) => {
 
+
         let ServerCollection = await Server.findOne({ guild_id: guild.id })
 
         if (!ServerCollection) {
             ServerCollection = await createServerData(guild.id)
         }
 
-        let member
-        let channel
 
-        try {
-            member = await guild.members.fetch('1082005834944483379')
-            channel = await guild.channels.fetch(channel => channel.type === 0 && member.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages))
-        } catch(error) {
-            return
-        }
 
-        if (!member && !channel) return;
+        const channel = await guild.channels.cache.find(async (channel) => channel.type === 0 && (guild.members.me.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)))
+        if (!channel) return;
 
 
         const welcomeEmbed = new EmbedBuilder()
@@ -47,7 +41,9 @@ module.exports = {
                     .setLabel('Discord Server!'),
             )
 
-        return await channel.send({ embeds: [ welcomeEmbed ], components: [ welcomeButtons ] }).catch(error => { return })
+        return
+
+        return await channel.send({ embeds: [ welcomeEmbed ], components: [ welcomeButtons ] }).catch(error => { console.log(error) })
 
 
 

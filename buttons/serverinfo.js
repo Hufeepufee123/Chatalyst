@@ -10,18 +10,15 @@ module.exports = {
         const serverId = split[0]
         const status = split[1]
 
-
+        if (status === 'done') {
+            return await interaction.reply({ content: 'Information has already been posted about this server!', ephemeral: true })
+        }
 
         const data = await Server.findOne({ guild_id: serverId })
 
         if (data.settings.private === true) {
             return await interaction.reply({ content: 'The server has been set to `private` meaning you cant view their statistics!', ephemeral: true })
         }
-
-        if (status === 'done') {
-            return await interaction.reply({ content: 'Information has already been posted about this server!', ephemeral: true })
-        }
-
 
 
         const server = await client.guilds.fetch(serverId)
