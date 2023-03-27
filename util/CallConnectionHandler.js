@@ -40,29 +40,6 @@ const FindConnection = async (client, interaction) => {
 }
 
 
-const FilterMessage = async (message) => {
-    let msg = message
-    if (msg.includes('@everyone')) {
-        msg = msg.replace('@everyone', '@.everyone')
-    }
-
-    if (msg.includes('@here')) {
-        msg = msg.replace('@here', '@.here')
-    }
-
-    
-
-
-    if (msg.includes('@everyone') || msg.includes('@here')) {
-        return await FilterMessage(msg)
-    } else {
-        return msg
-    }
-
-
-}
-
-
 const UpdateUser = async (discordId) => {
     try {
         let userData = await User.findOne({ discord_id: discordId })
@@ -182,7 +159,13 @@ const StartConnection = async (client, interaction, check_available) => {
     const data_guild_1 = await Server.findOne({ guild_id: check_available.guild_1})
     const data_guild_2 = await Server.findOne({ guild_id: interaction.guild.id })
 
-    return await interaction.channel.send(data_guild_2.settings.messageConnected ?? 'Found a connection! Please be nice.').then(async (interaction) => {
+
+    let message = data_guild_2.settings.messageConnected
+    if (message && message === 'N/A'){
+       message = 'Found a connection! Please be nice' 
+    }
+
+    return await interaction.channel.send(message ?? 'Found a connection! Please be nice.').then(async (interaction) => {
         const guild_1 = check_available.guild_1
         const channel_1 = await client.channels.fetch(check_available.channel_1)
 
@@ -194,7 +177,11 @@ const StartConnection = async (client, interaction, check_available) => {
         const collector_1 = channel_1.createMessageCollector({ filter })
         const collector_2 = channel_2.createMessageCollector({ filter })
 
-        await channel_1.send(data_guild_1.settings.messageConnected ?? 'Found a connection! Please be nice').catch(async (error) => {
+        let message = data_guild_1.settings.messageConnected
+        if (message && message === 'N/A'){
+           message = 'Found a connection! Please be nice' 
+        }
+        await channel_1.send(message ?? 'Found a connection! Please be nice').catch(async (error) => {
             collector_1.stop('error')
             collector_2.stop('error')
             return
@@ -275,12 +262,28 @@ const StartConnection = async (client, interaction, check_available) => {
         collector_1.on('end', async (collected, reason) => {
             await Connection.deleteOne({ data })
 
+            let message = data_guild_1.settings.messageDisconnected
+            if (message && message === 'N/A'){
+                if (reason === 'end_sent'){
+                    message = 'Succesfully disconnected'
+                } else {
+                    message = 'Call ended by other recipient!'
+                }
+            }
 
-            return EndConnection(channel_1, reason, guild_2, data_guild_1.settings.messageDisconnected)
+            return EndConnection(channel_1, reason, guild_2, message)
         })
 
         collector_2.on('end', async (collected, reason) => {
-            return EndConnection(channel_2, reason, guild_1, data_guild_2.settings.messageDisconnected)
+            let message = data_guild_2.settings.messageDisconnected
+            if (message && message === 'N/A'){
+                if (reason === 'end_sent'){
+                    message = 'Succesfully disconnected'
+                } else {
+                    message = 'Call ended by other recipient!'
+                }
+            }
+            return EndConnection(channel_2, reason, guild_1, message)
         })
 
 
