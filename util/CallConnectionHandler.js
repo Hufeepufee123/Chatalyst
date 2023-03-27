@@ -85,8 +85,10 @@ const UpdateServerStats = async (serverId, discordId) => {
 
 const SendMessage = async (channel, msg) => {
     if (!msg.guild.members.me?.permissionsIn(channel).has(PermissionFlagsBits.SendMessages)) {
+        await msg.react('❌').catch(error => { return })
         return
     }
+
     if (msg.content === '' && !msg.attachments) return msg.channel.send('You cant send nothing!').catch(error => { return false })
 
     let message = msg.content
@@ -140,7 +142,7 @@ const SendMessage = async (channel, msg) => {
 
         }).catch(async () => {
             await msg.react('❌').catch(error => { return })
-            return
+            return true
         })
     }
 }
@@ -198,24 +200,32 @@ const StartConnection = async (client, interaction, check_available) => {
             return
         })
 
-        let send_1 = false
-        let send_2 = false
+
 
         collector_1.on('collect', async (msg) => {
             const getConnection = await Connection.findOne({ guild_1: msg.guild.id })
-            if (!getConnection && !send_1) {
-                send_1 = true
+            if (!getConnection) {
                 collector_1.stop('end_recieved')
                 collector_2.stop('end_sent')
                 return
             }
 
-            if (endCallList.includes(msg.content) && !send_1) {
-                send_1 = true
+            if (endCallList.includes(msg.content)) {
                 collector_1.stop('end_sent')
                 collector_2.stop('end_recieved')
                 return
             }
+
+            if (data_guild_1.settings.blacklistRole != 'N/A' && msg.member.roles.cache.get(data_guild_1.settings.blacklistRole)) {
+                await msg.react('❌').catch(error => { return })
+                return
+            }
+    
+            if (data_guild_1.settings.whitelistRole != 'N/A' && !msg.member.roles.cache.get(data_guild_1.settings.whitelistRole)) {
+                await msg.react('❌').catch(error => { return })
+                return
+            }
+
             const sent = await SendMessage(channel_2, msg)
             if (!sent) {
                 collector_1.stop('error')
@@ -228,18 +238,26 @@ const StartConnection = async (client, interaction, check_available) => {
         collector_2.on('collect', async (msg) => {
 
             const getConnection = await Connection.findOne({ guild_2: msg.guild.id })
-            if (!getConnection && !send_2) {
-                send_2 = true
+            if (!getConnection) {
                 collector_2.stop('end_recieved')
                 collector_1.stop('end_sent')
                 return
             }
 
 
-            if (endCallList.includes(msg.content) && !send_2) {
-                send_2 = true
+            if (endCallList.includes(msg.content)) {
                 collector_2.stop('end_sent')
                 collector_1.stop('end_recieved')
+                return
+            }
+
+            if (data_guild_2.settings.blacklistRole != 'N/A' && msg.member.roles.cache.get(data_guild_2.settings.blacklistRole)) {
+                await msg.react('❌').catch(error => { return })
+                return
+            }
+    
+            if (data_guild_2.settings.whitelistRole != 'N/A' && !msg.member.roles.cache.get(data_guild_2.settings.whitelistRole)) {
+                await msg.react('❌').catch(error => { return })
                 return
             }
 

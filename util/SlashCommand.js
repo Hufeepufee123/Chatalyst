@@ -1,11 +1,13 @@
 module.exports = class SlashCommand {
-    constructor(name, description, tag, clientOwnerOnly, guildAdminOnly){
+    constructor(name, description, tag, clientOwnerOnly, guildAdminOnly, betaOnly){
         this._name = name
         this._description = description
         this._tag = tag
 
         this._clientOwnerOnly = clientOwnerOnly
         this._guildAdminOnly = guildAdminOnly
+        
+        this._betaOnly = betaOnly
     }
 
     get name(){
@@ -27,6 +29,10 @@ module.exports = class SlashCommand {
 
     get guildOwnerOnly(){
         return this._guildAdminOnly
+    }
+
+    get betaOnly(){
+        return this._betaOnly
     }
 
     

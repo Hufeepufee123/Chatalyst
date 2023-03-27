@@ -2,7 +2,7 @@ const { Routes } = require('discord.js');
 const fs = require('fs');
 
 const { fetchFiles } = require('../util/Helper');
-const { debug_mode, debug_server } = require('../devconfig.json');
+const { debug_mode, debug_server, beta_servers } = require('../devconfig.json');
 
 module.exports = async (client) => {
     await fs.readdirSync(`./commands/`).forEach((category) => {
@@ -30,6 +30,8 @@ module.exports = async (client) => {
         await client.rest.put(Routes.applicationGuildCommands(process.env.APPLICATION_ID, debug_server), {
             body: []
         })
+
+        
 
         await client.rest.put(Routes.applicationCommands(process.env.APPLICATION_ID), {
             body: rawCommandJSON

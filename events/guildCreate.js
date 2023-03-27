@@ -42,7 +42,7 @@ module.exports = {
             )
 
 
-        return await channel.send({ embeds: [ welcomeEmbed ], components: [ welcomeButtons ] }).catch(error => { console.log(error) })
+        return await channel.send({ embeds: [ welcomeEmbed ], components: [ welcomeButtons ] }).catch(error => { return })
 
 
 

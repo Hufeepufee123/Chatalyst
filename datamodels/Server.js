@@ -14,6 +14,8 @@ module.exports = Mongoose.model("Servers", new Mongoose.Schema({
         messageConnected: { type: String, required: false },
         messageDisconnected: { type: String, required: false },
         
+        invite: { type:String, required: false },
+        
         callChannel: { type: String, required: true },
         allowImages: { type: Boolean, required: true, default: true },
 

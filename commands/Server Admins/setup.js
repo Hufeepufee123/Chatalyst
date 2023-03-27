@@ -12,19 +12,24 @@ const questions = [
         small: 'callChannel'
     },
     {
-        question: 'Would you like to allow images outbound and inbound during calls? **Y | N**\n\nSkipping will set this to true. Saying `cancel` will stop this prompt.',
+        question: 'Would you like to allow images outbound and inbound during calls? **Y | N**\n\nSaying `cancel` will stop this prompt.',
         req: 'bool',
         small: 'allowImages'
     },
     {
-        question: 'Would you like to filter text in calls (In Development)? **Y | N**\n\nSkipping will set this to false. Saying `cancel` will stop this prompt.',
+        question: 'Would you like to filter text in calls (In Development)? **Y | N**\n\nSaying `cancel` will stop this prompt.',
         req: 'bool',
         small: 'filterText'
     },
     {
-        question: 'Would you like to make your server anonymous? **Y | N**\n\nSkipping will set this to false. Saying `cancel` will stop this prompt.',
+        question: 'Would you like to make your server anonymous? **Y | N**\n\nSaying `cancel` will stop this prompt.',
         req: 'bool',
-        small: 'private'
+        small: 'private', 
+        next: {
+            question: 'Would you like people to access a server invite and join the server? **Y | N**\n\nSaying `cancel` will stop this prompt.',
+            req: 'inv',
+            small: 'invite'
+        }
     },
     { 
         question: 'What custom message would you like when you **connect** to a call? You can ping roles, mention channels, etc. Saying `cancel` will stop this prompt.',
@@ -49,7 +54,7 @@ const questions = [
 ]
 
 
-const checkReq = async (question, message, stored) => {
+const checkReq = async (question, message) => {
     await message
 
     if (message.content.toLowerCase() === 'cancel'){
@@ -101,6 +106,27 @@ const checkReq = async (question, message, stored) => {
         if (msg.includes('yes') || msg.includes('y') || msg.includes('true')) return 'true'
         return 
     }
+
+    if (req === 'inv') {
+        const msg = message.content.toLowerCase()
+        if (msg.includes('no') || msg.includes('n') || msg.includes('false')) return 'false'
+        if (msg.includes('yes') || msg.includes('y') || msg.includes('true')) {
+            const invite = await message.channel.createInvite(
+                {
+                    maxAge: 0,
+                    maxUses: 0 
+                },
+                `Requested with command by ${message.author.tag}`
+            )
+            .catch(error => {
+                console.log(error)
+                return
+            });
+            return invite.code
+    
+        }
+        return 
+    }
 }
 
 module.exports = class Help extends SlashCommand {
@@ -112,6 +138,8 @@ module.exports = class Help extends SlashCommand {
         try {
 
             let collectCounter = 0
+            let max = 8
+
             let endCounter = 0
 
             let stored = {
@@ -120,6 +148,8 @@ module.exports = class Help extends SlashCommand {
 
                 messageConnected: 'Found a connection! Please be nice.',
                 messageDisconnected: 'Succesfully disconnected.',
+
+                invite: 'N/A',
 
                 blacklistRole: 'N/A',
                 whitelistRole: 'N/A',
@@ -135,14 +165,37 @@ module.exports = class Help extends SlashCommand {
 
             const collector = interaction.channel.createMessageCollector({filter})
 
-
+            let nextQuestion = null
 
 
             collector.on('collect', async (msg) => {
-                if (collectCounter < 8){
+                if (collectCounter < max){
+
+                    if (nextQuestion != null){
+
+                        const req_2 = await checkReq(nextQuestion, msg)
 
 
-                    const req = await checkReq(questions[collectCounter], msg, stored)
+                        if (req_2 === 'cancel'){
+                            return collector.stop('cancelled')
+                        }
+
+                        if (!req_2){
+                            return interaction.channel.send(nextQuestion.question)
+                        } 
+
+
+                        stored[nextQuestion.small] = req_2
+                        nextQuestion = null
+                        
+                        collectCounter++
+
+                        interaction.channel.send(questions[collectCounter].question)
+                        return
+                    }
+
+
+                    const req = await checkReq(questions[collectCounter], msg)
 
 
                     if (req === 'cancel'){
@@ -157,10 +210,16 @@ module.exports = class Help extends SlashCommand {
 
                     stored[questions[collectCounter].small] = req
 
+                    if (questions[collectCounter].next && req === 'false'){
+                        nextQuestion = questions[collectCounter].next
+                        interaction.channel.send(questions[collectCounter].next.question)
+                        return 
+                    }
+
                 
                     collectCounter++
 
-                    if (collectCounter >= 8){
+                    if (collectCounter >= max){
                         return collector.stop('fulfilled')
                     }
                     interaction.channel.send(questions[collectCounter].question).catch(async (error) => {
@@ -178,14 +237,14 @@ module.exports = class Help extends SlashCommand {
                     await Server.updateOne({ guild_id: interaction.guild.id }, {
                         settings: stored
                     }).catch(async (error) => {
-                        return await interaction.reply('Error with saving with database, please try again!')
+                        return 
                     })
 
                     return await interaction.channel.send(`<@${interaction.user.id}>, successfully updated settings!`)
                 } else if (reason === 'cancelled'){
                     return await interaction.channel.send('Cancelled!')
                 } else if (reason === 'error'){
-                    return await interaction.channel.send('')
+                    return await interaction.channel.send('🚫 **An error occured, closed connection!**')
                 }
             })
 

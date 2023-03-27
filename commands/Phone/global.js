@@ -18,13 +18,13 @@ const discordServerButton = new ActionRowBuilder()
 
 module.exports = class Help extends SlashCommand {
     constructor() {
-        super('global', 'Start a global call in the channel', 'phone', false, false);
+        super('global', 'Start a global call in the channel', 'phone', false, false, true);
     }
 
     async run(client, UserCollection, ServerCollection, interaction) {
 
-        return await interaction.reply({ content: 'This is a `beta` only feature, to apply feel free to join our communication server', components: [ discordServerButton ] , ephemeral: true })
 
+        return
 
         if (ServerCollection.settings.setup === false) {
             return await interaction.reply({ content: 'This server has not been setup, please tell a `Server Administrator` to set the server up!', ephemeral: true })

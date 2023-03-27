@@ -2,8 +2,8 @@
 
 const User = require('../datamodels/User');
 const Server = require('../datamodels/Server')
-const { developers } = require('../devconfig.json');
-const { InteractionType, PermissionFlagsBits } = require('discord.js');
+const { developers, beta_servers } = require('../devconfig.json');
+const { InteractionType, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { createServerData, createUserData } = require('../util/Helper');
 
 const returnError = async(interaction, role) => {
@@ -12,6 +12,16 @@ const returnError = async(interaction, role) => {
     })
 }
 
+const discordServerButton = new ActionRowBuilder()
+    .addComponents(
+
+        new ButtonBuilder()
+            .setStyle(ButtonStyle.Link)
+            .setURL('https://discord.gg/JMk9upECuN')
+
+            .setEmoji('1083142034195488828')
+            .setLabel('Discord Server!'),
+    )
 
 module.exports = {
     name: 'interactionCreate',
@@ -19,7 +29,6 @@ module.exports = {
         if (!interaction.guild){
             return await interaction.reply('You cant do commands in DMs!')
         }
-
         const { commandName } = interaction;
         const command = client.Commands.get(commandName);
 
@@ -32,6 +41,7 @@ module.exports = {
     
             if (command.clientOwnerOnly && !developers.find(member.id)) return await returnError(interaction, 'Chatalyst Developers')
     
+            if (command.betaOnly && !beta_servers.find(interaction.guild.id)) return await interaction.reply({ content: 'This is a `beta` only feature, to apply feel free to join our communication server', components: [ discordServerButton ] , ephemeral: true })
     
             try {
                 if (command.guildAdminOnly && await member.permissionsIn(interaction.channel).has(PermissionFlagsBits.Administrator)) return await returnError(interaction, 'Server Administrators')
@@ -95,6 +105,7 @@ module.exports = {
             try {
                 return await Button.run(client, interaction)
             } catch(error) {
+                console.log(error)
                 return await interaction.reply({ content: "Failed to run command, please try again later.", ephemeral: true }).catch(async (errr) => {
                     return await interaction.editReply({ content: "Failed to run command, please try again later.", ephemeral: true }).catch(err => {return})
                 })

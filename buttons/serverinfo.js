@@ -38,6 +38,20 @@ module.exports = {
             .setDescription(`🛡️ **${serverOwner.user.tag}**\n🏷️ **${server.memberCount.toLocaleString("en-US")}** members!`)
             .setThumbnail(server.iconURL())
 
+        let buttons
+
+        if (data.settings.invite && data.settings.invite != 'N/A'){
+            buttons = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setEmoji('1083142034195488828')
+                        .setLabel('Discord Invite')
+                        .setURL(`https://discord.gg/${data.settings.invite}`)
+
+                        .setStyle(ButtonStyle.Link)
+                )
+        }
+
 
         const infoButton = new ActionRowBuilder()
             .addComponents(
@@ -52,7 +66,14 @@ module.exports = {
 
         try {
             await interaction.update({ components: [infoButton] })
-            return await interaction.channel.send({ embeds: [infoEmbed] })
-        }catch(error){console.log(error)}
+            if (buttons){
+                return await interaction.channel.send({ embeds: [infoEmbed], components: [buttons] })
+            } else{
+                return await interaction.channel.send({ embeds: [infoEmbed] })
+            }
+        }catch(error){
+            console.log(error) 
+            return
+        }
     }
 } 
