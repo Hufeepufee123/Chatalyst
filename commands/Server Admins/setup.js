@@ -32,12 +32,12 @@ const questions = [
         }
     },
     { 
-        question: 'What custom message would you like when you **connect** to a call? You can ping roles, mention channels, etc. Saying `cancel` will stop this prompt.',
+        question: 'What custom message would you like when you **connect** to a call? You can ping roles, mention channels, etc.\n\nSaying `skip` will make it the default message. Saying `cancel` will stop this prompt.',
         req: 'string',
         small: 'messageConnected',
     },
     { 
-        question: 'What custom message would you like when you **disconnect** to a call? You can ping roles, mention channels, etc. Saying `cancel` will stop this prompt.',
+        question: 'What custom message would you like when you **disconnect** to a call? You can ping roles, mention channels, etc.\n\nSaying `skip` will make it the default message. Saying `cancel` will stop this prompt.',
         req: 'string',
         small: 'messageDisconnected',
     },
@@ -94,7 +94,11 @@ const checkReq = async (question, message) => {
     }
 
     if (req === 'string'){
-        return message.content
+        if (message.content.toLowerCase() === 'skip'){
+            return 'N/A'
+        } else{
+            return message.content
+        }
     }
 
 
